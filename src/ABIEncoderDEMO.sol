@@ -78,4 +78,39 @@ contract ABIEncoderDEMO {
 		//Combine everything 
 		swapData = abi.encodePacked(pathData, amountData, deadline);
 	}
+
+	/**
+	 * @dev Encodes data for a limit order
+	 * @param maker Maker address 
+	 * @param taker Taker address 
+	 * @param tokenIn Input token
+	 * @param tokenOut Output token
+	 * @param amountIn Input amount
+	 * @param amountOut Output amount
+	 * @param nonce Unique nonce 
+	 * @return orderHash 
+	 * @return orderData 
+	 */
+
+	function encodeLimitOrder(address maker, address taker, address tokenIn, address tokenOut, uint256 amountIn, uint256 amountOut, uint256 nonce) external pure returns(bytes32 orderHash, bytes memory orderData) {
+		//Encode the order data
+		orderData = abi.encodePacked(maker, taker, tokenIn, tokenOut, amountIn, amountOut, nonce, "LIMIT_ORDER_V1");
+
+		//Create the order hash
+		orderHash = keccak256(orderData);
+	}
+
+	/**
+	 * @dev Econdes data for a yield position 
+	 * @param user Address of the user 
+	 * @param poolId Identifier of the pool 
+	 * @param amount Amount to be deposited 
+	 * @param startTime Start time of the position 
+	 * @return positionId Identifier (unique for this position)
+	 */
+
+	function encodeYieldPosition(address user, bytes32 poolId, uint256 amount, uint256 startTime) external pure returns(bytes32 positionId) {
+		positionId = keccak256(abi.encodePacked(user, poolId, amount, startTime, "YIELD_POSITION"));
+	}
+
 }
