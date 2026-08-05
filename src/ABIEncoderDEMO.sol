@@ -113,4 +113,86 @@ contract ABIEncoderDEMO {
 		positionId = keccak256(abi.encodePacked(user, poolId, amount, startTime, "YIELD_POSITION"));
 	}
 
+
+	/**
+	 * @dev Encodes data for a flash loan 
+	 * @param token Token to be borrowed 
+	 * @param amount Amount to be borrowed 
+	 * @param callbackData Data to be passed to the callback function 
+	 * @return flashData Encoded flash loan data
+	 */
+
+
+	function encodeFlashLoadData(address token, uint256 amount, bytes calldata callbackData) external pure returns(bytes memory flashData) {
+		flashData = abi.encodePacked(token, amount, callbackData, "FLASH_LOAN_V1");
+	}
+
+	/**
+	 * @dev Encodes parameters for a staking pool 
+	 * @param token Token address
+	 * @param rewardRate Reward rate
+	 * @param lockPeriod Lock period
+	 * @param maxStakers Maximum number of stakers
+	 * @return poolConfig Encoded configuration data
+	 */
+
+	function encodeStakingPoolConfig(address token, uint256 rewardRate, uint256 lockPeriod, uint256 maxStakers) external view returns(bytes memory poolConfig) {
+		poolConfig = abi.encodePacked(token, rewardRate, lockPeriod, maxStakers, block.timestamp);
+
+	}
+
+	/**
+	 * @dev Creates a unique hash for a user across multiple pools
+	 * @param user User address
+	 * @param poolIds Array of pool identifiers
+	 * @return userHash Unique user hash 
+	 */
+
+	function createUserMultiPoolHash(address user, bytes32[] calldata poolIds) external pure returns (bytes32 userHash) {
+		bytes memory data = abi.encodePacked(user);
+
+		//Encode all pool ids
+		for(uint i = 0; i < poolIds.length; i++){
+			data = abi.encodePacked(data, poolIds[i]);
+		}
+
+		//Hash the data 
+		data = abi.encodePacked(data, "MULTI_POOL_USER");
+		userHash = keccak256(data);
+	}
+
+	/**
+	 * @dev Encodes data for a yield farming strategy
+	 * @param strategyName Name of the strategy
+	 * @param pools Array of involved pools
+	 * @param weights Array of weights for each pool
+	 * @return strategyData Encoded strategy data
+	 */
+
+	function encodeYieldStrategy(
+		string calldata strategyName,
+		address[] calldata pools,
+		uint256[] calldata weights
+	) external pure returns(bytes memory strategyData) {
+		require(pools.length == weights.length, "Arrays length mismatch");
+
+		//Encode strategy name
+		bytes memory nameData = abi.encodePacked(strategyName);
+
+		//Encode pools
+		bytes memory poolsData;
+		for (uint i = 0; i < pools.length; i++) {
+			poolsData = abi.encodePacked(poolsData, pools[i]);
+		}
+
+		//Encode weights
+		bytes memory weightsData;
+		for (uint i = 0; i < weights.length; i++) {
+			weightsData = abi.encodePacked(weightsData, weights[i]);
+		}
+
+		//Combine everything
+		strategyData = abi.encodePacked(nameData, poolsData, weightsData, "YIELD_STRATEGY_V1");
+	}
+
 }
