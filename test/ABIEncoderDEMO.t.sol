@@ -59,4 +59,47 @@ contract ABIEncoderDEMOTest is Test {
 		assertEq(encodedData, expected, "encoded trading position mismatch");
 		assertEq(positionId, keccak256(expected), "position id must be keccak of encodedData"); 
 	}
+
+
+	function test_encodeSwapData_EncodesPathAmountsDeadline() external { 
+		address[] memory path = new address[](3);
+		path[0] = address(0x1);
+		path[1] = address(0x2);
+		path[2] = address(0x3);
+
+		uint256[] memory amounts = new uint256[](3);
+		amounts[0] = 10;
+		amounts[1] = 20;
+		amounts[2] = 30;
+
+		uint256 deadline = 999;
+
+		bytes memory pathData;
+		for(uint256 i; i < path.length; i++) {
+			pathData = abi.encodePacked(pathData, path[i]);
+		}
+
+		bytes memory amountsData; 
+		for(uint256 i; i < amounts.length; i++) {
+			amountsData = abi.encodePacked(amountsData, amounts[i]);
+		}
+
+		bytes memory expected = abi.encodePacked(pathData, amountsData, deadline);
+		bytes memory actual = demo.encodeSwapData(path, amounts, deadline);
+
+		assertEq(actual, expected, "swap data ecoding mismatch");
+		
+	}
+
+	function test_encodeSwapData_RevertsOnLengthMismatch() external {
+		address[] memory path = new address[](2);
+		path[0] = address(0x1);
+		path[1] = address(0x2);
+
+		uint256[] memory amounts = new uint256[](1);
+		amounts[0] = 10;
+
+		vm.expectRevert(abi.encodeWithSignature("Error(string)" , "Array length mismatch"));
+		demo.encodeSwapData(path, amounts, 123); 
+	}
 }
